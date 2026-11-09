@@ -1,0 +1,29 @@
+{
+  "$schema": "./config.schema.json",
+  "market": "en-US",
+  "resolution": "UHD",
+  "download_dir": "~/.bing-wallpapers",
+  "days": "auto",
+  "day_offsets": null,
+  "keep_days": 14,
+  "set_wallpaper": true,
+  "main_display_first": false,
+  "overlay": {
+    "enabled": true,
+    "position": "bottom-right",
+    "margin": 48,
+    "taskbar_offset": "auto",
+    "padding": 28,
+    "corner_radius": 20,
+    "background_color": [0, 0, 0],
+    "background_opacity": 150,
+    "text_color": [255, 255, 255],
+    "title_font_size": 48,
+    "text_font_size": 32,
+    "show_title": true,
+    "show_copyright": true,
+    "show_author": false,
+    "max_width_ratio": 0.35,
+    "line_spacing": 10
+  }
+}

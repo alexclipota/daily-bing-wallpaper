@@ -1,0 +1,4 @@
+Pillow>=10.1
+certifi>=2023.0  # reliable CA bundle (fixes SSL errors on macOS python.org builds)
+# Windows only: needed for per-monitor wallpaper via IDesktopWallpaper
+comtypes>=1.1; sys_platform == "win32"

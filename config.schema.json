@@ -1,0 +1,210 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Bing Wallpaper configuration",
+  "description": "Configuration for bing_wallpaper.py - multi-monitor Bing daily wallpapers with an info overlay.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Editor hint pointing at this schema file. Not used by the script."
+    },
+    "market": {
+      "type": "string",
+      "default": "en-US",
+      "description": "Bing market/region to download wallpapers from. Different markets sometimes get different images.",
+      "enum": ["en-US", "en-GB", "en-CA", "en-AU", "de-DE", "fr-FR", "es-ES", "it-IT", "pt-BR", "ja-JP", "zh-CN", "ro-RO"],
+      "enumDescriptions": [
+        "United States (English)", "United Kingdom", "Canada", "Australia",
+        "Germany", "France", "Spain", "Italy", "Brazil", "Japan", "China",
+        "Romania"
+      ]
+    },
+    "resolution": {
+      "type": "string",
+      "default": "UHD",
+      "description": "Requested download resolution. If unavailable, the script falls back to UHD, then 1920x1080.",
+      "enum": ["UHD", "1920x1080", "1920x1200", "1366x768", "1280x720", "1080x1920"],
+      "enumDescriptions": [
+        "3840x2160 (4K) - recommended",
+        "Full HD",
+        "WUXGA (16:10)",
+        "WXGA laptop",
+        "HD 720p",
+        "1080x1920 portrait (vertical monitors)"
+      ]
+    },
+    "download_dir": {
+      "type": "string",
+      "default": "~/.bing-wallpapers",
+      "description": "Folder where wallpapers are stored. '~' expands to your home directory. Clean originals and '*_overlay.jpg' versions (the ones actually set as wallpaper) live here."
+    },
+    "days": {
+      "default": "auto",
+      "description": "How many daily images to fetch (0 = today, 1 = yesterday, ...). 'auto' = one per detected monitor.",
+      "oneOf": [
+        { "type": "string", "enum": ["auto"] },
+        { "type": "integer", "minimum": 1 }
+      ]
+    },
+    "day_offsets": {
+      "type": ["array", "null"],
+      "default": null,
+      "description": "Explicit mapping of monitor -> day offset (0 = today, 1 = yesterday, ...). null = automatic [0, 1, 2, ...]. Example: [0, 0, 3] shows today on monitors 1-2 and 3-days-ago on monitor 3.",
+      "items": { "type": "integer", "minimum": 0 }
+    },
+    "keep_days": {
+      "type": "integer",
+      "default": 14,
+      "minimum": 0,
+      "description": "Delete downloaded images older than this many days. 0 = keep forever."
+    },
+    "set_wallpaper": {
+      "type": "boolean",
+      "default": true,
+      "description": "Set the wallpapers after downloading. false = download only (same as the --download-only flag)."
+    },
+    "schedule": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Controls how repeat runs (login/scheduler) behave, so the script doesn't do useless work once today's wallpaper is set.",
+      "properties": {
+        "check_start_hour": {
+          "type": "integer",
+          "default": 7,
+          "minimum": 0,
+          "maximum": 23,
+          "description": "Hour of day (0-23, local time) from which the script starts looking for TODAY's new wallpaper. Before this hour it always checks; once today's wallpaper has been downloaded AND set, later runs that day exit immediately. Set it to just after Bing rotates the image in your market's timezone (for en-US that is midnight US Eastern). A manual run with --force ignores this."
+        }
+      }
+    },
+    "main_display_first": {
+      "type": "boolean",
+      "default": false,
+      "description": "ESCAPE HATCH - you almost certainly do NOT need this. On macOS the script already identifies your main display by name and gives it today's wallpaper automatically. Only set this to true if, despite that, your main display still shows the wrong image (it switches to plain hardware order). Ignored on Windows/Linux."
+    },
+    "overlay": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "The info box with the wallpaper title and details, drawn in a corner of the image.",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Draw the info box. Requires Pillow."
+        },
+        "position": {
+          "type": "string",
+          "default": "bottom-right",
+          "description": "Corner of the image where the info box is drawn. Bottom positions automatically clear the taskbar (see taskbar_offset).",
+          "enum": ["bottom-right", "bottom-left", "top-right", "top-left"],
+          "enumDescriptions": [
+            "Bottom right (default)",
+            "Bottom left",
+            "Top right",
+            "Top left"
+          ]
+        },
+        "margin": {
+          "type": "integer",
+          "default": 48,
+          "minimum": 0,
+          "description": "Distance between the info box and the image edge, in pixels (tuned for 4K)."
+        },
+        "taskbar_offset": {
+          "default": "auto",
+          "description": "Extra clearance so the overlay never hides under the OS taskbar/dock. Only affects bottom positions. 'auto' detects the real taskbar size on Windows and uses a safe default on macOS/Linux. Use a preset or a pixel number to override.",
+          "oneOf": [
+            {
+              "type": "string",
+              "enum": ["auto", "none", "small", "medium", "large"],
+              "enumDescriptions": [
+                "Detect automatically (recommended)",
+                "0 px - no taskbar on the overlay's edge",
+                "60 px - slim taskbar or auto-hide",
+                "100 px - default Windows taskbar at 4K with scaling",
+                "160 px - thick taskbar or macOS Dock"
+              ]
+            },
+            { "type": "integer", "minimum": 0, "description": "Exact offset in pixels" }
+          ]
+        },
+        "padding": {
+          "type": "integer",
+          "default": 28,
+          "minimum": 0,
+          "description": "Inner padding of the info box, in pixels."
+        },
+        "corner_radius": {
+          "type": "integer",
+          "default": 20,
+          "minimum": 0,
+          "description": "Rounded-corner radius of the info box, in pixels. 0 = square corners."
+        },
+        "background_color": {
+          "type": "array",
+          "default": [0, 0, 0],
+          "description": "Info box color as [R, G, B], each 0-255.",
+          "items": { "type": "integer", "minimum": 0, "maximum": 255 },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "background_opacity": {
+          "type": "integer",
+          "default": 150,
+          "minimum": 0,
+          "maximum": 255,
+          "description": "Info box opacity. 0 = fully transparent, 255 = solid."
+        },
+        "text_color": {
+          "type": "array",
+          "default": [255, 255, 255],
+          "description": "Text color as [R, G, B], each 0-255.",
+          "items": { "type": "integer", "minimum": 0, "maximum": 255 },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "title_font_size": {
+          "type": "integer",
+          "default": 48,
+          "minimum": 1,
+          "description": "Title font size in pixels (tuned for 4K; halve it for 1080p)."
+        },
+        "text_font_size": {
+          "type": "integer",
+          "default": 32,
+          "minimum": 1,
+          "description": "Details font size in pixels (tuned for 4K; halve it for 1080p)."
+        },
+        "show_title": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show the wallpaper title line."
+        },
+        "show_copyright": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show the details line (location, description, etc. as provided by Bing)."
+        },
+        "show_author": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show the author/copyright holder - the trailing '(c) Name' part of the details line. false keeps the location/description but hides the author. Only applies when show_copyright is true."
+        },
+        "max_width_ratio": {
+          "type": "number",
+          "default": 0.35,
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "description": "Maximum width of the info box as a fraction of the image width (0.0-1.0)."
+        },
+        "line_spacing": {
+          "type": "integer",
+          "default": 10,
+          "minimum": 0,
+          "description": "Extra space between text lines, in pixels."
+        }
+      }
+    }
+  }
+}
